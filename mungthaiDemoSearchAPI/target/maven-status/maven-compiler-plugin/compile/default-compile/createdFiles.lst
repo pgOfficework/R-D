@@ -1,6 +1,0 @@
-com\sapiens\dba\repository\SugesstionsRepository.class
-com\sapiens\dba\Controller\SearchController.class
-com\sapiens\dba\Dao\Sugesstions.class
-com\sapiens\dba\MongodbAtlasSearchApplication.class
-com\sapiens\dba\Dao\Search1.class
-com\sapiens\dba\Dao\Search.class
