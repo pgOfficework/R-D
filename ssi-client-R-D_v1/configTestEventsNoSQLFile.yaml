@@ -1,0 +1,21 @@
+ssi:
+    noSql:
+        target:
+            Target_Database                         : mongoDB
+            Target_Database_Uri                     : mongodb+srv://SapiensDBA:Sapiens123@datahub-freecluster.b0ho1.mongodb.net/test?retryWrites=true&w=majority
+            Target_Database_Name                    : R&D_NoSQL
+            Target_Audit_Database_Name              : R&D_NoSQL_Audit
+            Log_FolderPath                          : 'D:/SIT-IDIT VOs/Demo/BMM_IDIT/logs'
+            Log_FileName                            : elasticLog
+            Log_FileSize                            : 10MB
+            Log_RollOverSize                        : 5
+            Log_Mode                                : info
+        source:
+            file:
+                contact:
+                    Source_MD_CMS_Table_Name                : sourceDenormCMS
+                    Format_type                             : json
+                    Source_Folder_Path                      : 'D:/SIT-IDIT VOs/SourceFolder/Entity'
+                    Processed_Folder_Path                   : 'D:/SIT-IDIT VOs/ProcessedFolder'
+                    Error_FileHandle_Ind                    : 0
+                    Error_FileTranfer_Path                  : 'D:/SIT-IDIT VOs/UnprocessedFolder'

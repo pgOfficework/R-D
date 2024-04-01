@@ -1,0 +1,111 @@
+ssi:
+    sql:
+        target:
+            SSI_Properties_File                     : 'D:/SIT-IDIT VOs/Properties/SSI_CORE_IDIT_CONFIG.yaml'
+            Target_DB_Format_Ind                    : 1
+            BatchSize                               : 100
+            Target_Audit_Database                   : mssql
+            Target_Audit_Driver_Class               : com.microsoft.sqlserver.jdbc.SQLServerDriver
+            Target_Audit_JDBC_URL                   : 'jdbc:sqlserver://IBX-BIDEV-SQLDB:1433;DatabaseName=DATAONE_DEV'
+            Target_Audit_User_Id                    : bi_user1
+            Target_Audit_Password                   : ibexi@2015
+            Target_Audit_Schema_Nm                  : dbo
+            Source_Database                         : mssql
+            Source_Driver_Class                     : com.microsoft.sqlserver.jdbc.SQLServerDriver
+            Source_JDBC_URL                         : 'jdbc:sqlserver://cs-core-sql01\CORE:1433;DatabaseName=vanilla_uk_10000_bi'
+            Source_User_Id                          : alisuser
+            Source_Password                         : it12345*
+            Source_Schema_Nm                        : dbo
+            Target_Database                         : mssql
+            Target_Driver_Class                     : com.microsoft.sqlserver.jdbc.SQLServerDriver
+            Target_JDBC_URL                         : 'jdbc:sqlserver://IBX-BIDEV-SQLDB:1433;DatabaseName=DATAONE_DEV'
+            Target_User_Id                          : bi_user1
+            Target_Password                         : ibexi@2015
+            Target_ODS_Schema_Nm                    : null
+            Target_DWH_Schema_Nm                    : dbo
+            Mapping_Sheet_path                      : 'D:/GPF_PROJECT/SIT_Mapping/ModuleWise_Module_SIT_Mapping.xlsx'
+            Mapping_Table_Name                      : SIT_IDIT_VOs_Mapping_Serialization_AMEY
+            Source_MD_CMS_Table_Name                : sourceDenormCMS
+            No_Parallel_Execution                   : 10
+            Count                                   : 0
+            Target_Json_Push_File_Ind               : 0
+            Target_Json_Path                        : 'D:/GPF_PROJECT/TargetJson/'
+            Target_Kafka_Push_Ind                   : 0
+            Target_Kafka_BootstrapServers           : 10.245.128.143:9092
+            Target_Kafka_Topic                      : testSSI
+            RP_Kafka_Topic                          : bi_cs.source_error_reprocess
+            RP_Kafka_BootstrapServer                : 10.245.128.143:9092
+            RP_Retry                                : 3
+            Debug_Mode                              : 0
+            DebugLogFolderPath                      : 'D:/SIT-IDIT VOs/Demo/BMM_IDIT/logs'
+            Log_FolderPath                          : 'D:/SIT-IDIT VOs/Demo/BMM_IDIT/logs'
+            Log_FileName                            : elasticLog
+            Log_FileSize                            : 10MB
+            Log_RollOverSize                        : 5
+            Log_Mode                                : debug
+            inputRowThreads                         : 1
+            tableThreads                            : 1
+        source:
+            kafka:
+                contact:
+                    Source_MD_CMS_Table_Name    : sourceDenormCMS
+                    source_system               : IDIT
+                    Format_type			        : json
+                    bootstrapServers	        : '10.245.128.143:9092'
+                    grp_id				        : 'console-consmer-test1-33'
+                    exclusion_events            : ''
+                    # Kafka offset config value -- by default it is latest
+                    kafka_Offset		        : NA
+                    # Source Topic
+                    Topics				        : TestSII_IDIT_SOURCE_DATA
+                    JDBCUrl				        : 'jdbc:sqlserver://ibx-bidev-sqldb;databaseName=DATAONE_DEV'
+                    UserName			        : bi_user1
+                    UserPassword		        : ibexi@2015
+                    SchemaName			        : dbo
+            file:
+                contact:
+                    Source_MD_CMS_Table_Name                : sourceDenormCMS
+                    Format_type                             : json
+                    Source_Folder_Path                      : 'D:/SIT-IDIT VOs/SourceFolder/Entity'
+                    Processed_Folder_Path                   : 'D:/SIT-IDIT VOs/ProcessedFolder'
+                    Error_FileHandle_Ind                    : 0
+                    Error_FileTranfer_Path                  : 'D:/SIT-IDIT VOs/UnprocessedFolder'
+            db:
+                workflow:
+                    configs: sqldbWorkF
+    noSql:
+        target:
+            Target_Database                         : mongoDB
+            Target_Database_Uri                     : mongodb+srv://SapiensDBA:Sapiens123@datahub-freecluster.b0ho1.mongodb.net/test?retryWrites=true&w=majority
+            Target_Database_Name                    : R&D_NoSQL
+            Target_Audit_Database_Name              : R&D_NoSQL_Audit
+            Log_FolderPath                          : 'D:/SIT-IDIT VOs/Demo/BMM_IDIT/logs'
+            Log_FileName                            : elasticLog
+            Log_FileSize                            : 10MB
+            Log_RollOverSize                        : 5
+            Log_Mode                                : info
+        source:
+            kafka:
+                contact:
+                    Source_MD_CMS_Table_Name    : sourceDenormCMS
+                    source_system               : IDIT
+                    Format_type			        : json
+                    bootstrapServers	        : '10.245.128.143:9092'
+                    grp_id				        : 'console-consmer-test1-34'
+                    exclusion_events            : ''
+                    # Kafka offset config value -- by default it is latest
+                    kafka_Offset		        : NA
+                    # Source Topic
+                    Topics				        : TestSII_IDIT_SOURCE_DATA
+                    JDBCUrl				        : 'jdbc:sqlserver://ibx-bidev-sqldb;databaseName=DATAONE_DEV'
+                    UserName			        : bi_user1
+                    UserPassword		        : ibexi@2015
+                    SchemaName			        : dbo
+            file:
+                contact:
+                    Source_MD_CMS_Table_Name                : sourceDenormCMS
+                    Format_type                             : json
+                    Source_Folder_Path                      : 'D:/SIT-IDIT VOs/SourceFolder/Entity'
+                    Processed_Folder_Path                   : 'D:/SIT-IDIT VOs/ProcessedFolder'
+                    Error_FileHandle_Ind                    : 0
+                    Error_FileTranfer_Path                  : 'D:/SIT-IDIT VOs/UnprocessedFolder'

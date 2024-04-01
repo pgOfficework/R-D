@@ -1,0 +1,110 @@
+package com.sapiens.ssi.noSql.core.transformer.functions;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.HttpClients;
+
+import com.api.jsonata4java.expressions.EvaluateRuntimeException;
+import com.api.jsonata4java.expressions.ExpressionsVisitor;
+import com.api.jsonata4java.expressions.functions.Function;
+import com.api.jsonata4java.expressions.functions.FunctionBase;
+import com.api.jsonata4java.expressions.generated.MappingExpressionParser.Function_callContext;
+import com.api.jsonata4java.expressions.utils.Constants;
+import com.api.jsonata4java.expressions.utils.FunctionUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.TextNode;
+import com.sapiens.ssi.noSql.core.transformer.register.ConstantsForCustomFunctions;
+
+public class DedupFunction extends FunctionBase implements Function{
+
+	public DedupFunction(String postrequestURL) {
+		this.requestURL = postrequestURL;
+	}
+
+	public static String requestURL=null;
+	static HttpClient httpClient = HttpClients.createDefault();
+
+	private static final long serialVersionUID = -4281182554968881670L;
+
+	public static String ERR_BAD_CONTEXT = String.format(Constants.ERR_MSG_BAD_CONTEXT, ConstantsForCustomFunctions.FUNCTION_Dedupe);
+	public static String ERR_ARG1BADTYPE = String.format(Constants.ERR_MSG_ARG1_BAD_TYPE, ConstantsForCustomFunctions.FUNCTION_Dedupe);
+	public static String ERR_ARGNULL = String.format(ConstantsForCustomFunctions.ERR_MSG_ARG_NOT_NULL, ConstantsForCustomFunctions.FUNCTION_Dedupe);
+
+	public JsonNode invoke(ExpressionsVisitor expressionVisitor, Function_callContext ctx) {
+
+		boolean useContext = FunctionUtils.useContextVariable(this, ctx, getSignature());
+
+		int argCount = getArgumentCount(ctx);
+
+		ObjectMapper mapper = new ObjectMapper();
+
+		Map<String, JsonNode> jsonBodyMap=new LinkedHashMap<String, JsonNode>();
+		String jsonBody=null;
+		JsonNode response=null;
+		if(argCount!=0) {
+			for(int i=0;i<argCount;i++)
+			{
+				jsonBodyMap.put("key"+(i+1), FunctionUtils.getValuesListExpression(expressionVisitor, ctx, i));
+			}
+			try {
+				jsonBody=mapper.writeValueAsString(jsonBodyMap);
+			} catch (JsonProcessingException e) {
+				e.printStackTrace();
+			}
+		}
+		else
+			throw new EvaluateRuntimeException(ERR_ARGNULL);
+
+
+		try {
+			response= new TextNode(postRequest(requestURL, jsonBody));
+		} catch (IOException e) {
+			e.printStackTrace();
+		};
+		return response;
+	}
+
+	public static String postRequest(String requestURL, String jsonBody) throws IOException {
+		HttpPost postRequest = new HttpPost(requestURL);
+		StringEntity requestBody = new StringEntity(jsonBody);
+		postRequest.addHeader("content-type", "application/json");
+		postRequest.addHeader("Accept", "application/json");
+		postRequest.setEntity(requestBody);
+		HttpResponse response = httpClient.execute(postRequest);
+
+		InputStream result = response.getEntity().getContent();
+		Reader reader = new InputStreamReader(result);
+		BufferedReader bufferedReader = new BufferedReader(reader);
+		return bufferedReader.readLine();
+	}
+
+	
+	@Override
+	public int getMaxArgs() {
+		return 100;
+	}
+	@Override
+	public int getMinArgs() {
+		return 1; // account for context variable
+	}
+	@Override
+	public String getSignature() {
+		// takes an string arguments, returns a string
+		return "<s+:s>";
+	}
+
+}
