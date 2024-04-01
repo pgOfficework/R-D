@@ -1,0 +1,171 @@
+#https://docs.mongodb.com/manual/tutorial/update-documents-with-aggregation-pipeline/
+mongodb:
+  #uri: mongodb+srv://SapiensDBA:Sapiens123@datahub.b0ho1.mongodb.net/
+  #uri: mongodb+srv://SapiensDBA:Sapiens123@dataone.b0ho1.mongodb.net/
+  uri: mongodb+srv://SapiensDBA:Sapiens123@dataone.b0ho1.mongodb.net/test
+
+  #uri: mongodb+srv://SapiensDBA:Sapiens123@datahub-freecluster.b0ho1.mongodb.net/
+  #uri: mongodb+srv://SapiensDBA:Sapiens123@datahub-freecluster.lvofs.mongodb.net/test?authSource=admin&replicaSet=atlas-3y2fe5-shard-0&readPreference=primary&ssl=true
+  #database: R&D_NoSQL
+  database: Digital
+  changeStreamThreads: 20
+  changeStreamMaxBatchSize: 100
+  changeStreamMaxBatchDurationMS: 500
+ # connectionPoolMinSize : 10
+ # connectionPoolMaxSize : 30
+#change streams config details List
+changeStreams:
+  - auditCollections: contact123
+    #change Stream 1
+    watchedCollection: contact
+
+    targetViews:
+      - collName: cust360
+        match: contactId,contactId
+        completeDocument: No
+        directAttributes:
+          - watchField : fullName
+            targetField : fullName
+          - watchField : contactNumber
+            targetField : contactNumber
+          - watchField : dateOfBirth
+            targetField : dateOfBirth
+          - watchField : age
+            targetField : age
+          - watchField : language
+            targetField : language
+          - watchField : gender.description
+            targetField : gender
+          - watchField: telephoneNumbers.telephoneNumber
+            targetField: telephoneNumber
+          - watchField: emails.email
+            targetField: email
+          - watchField: maritalStatus
+            targetField: maritalStatus
+          - watchField: probabilitySaleNextBestProduct
+            targetField: probabilitySaleNextBestProduct
+          - watchField: nextBestProduct
+            targetField: nextBestProduct
+          - watchField: contactStatus
+            targetField: contactStatus
+          - watchField: activeClaims
+            targetField: activeClaims
+          - watchField: addresses.street
+            targetField: addresses.street
+          - watchField: addresses.house
+            targetField: addresses.house
+          - watchField: addresses.city
+            targetField: addresses.city
+          - watchField: addresses.state
+            targetField: addresses.state
+          - watchField: addresses.postalCode
+            targetField: addresses.postalCode
+        kafkaPushInd: false
+        kafkaTopic: 'cust360'
+
+  - watchedCollection: claim
+    # target Views
+    targetViews:
+      - collName: cust360
+        calculatedAttributes:
+          matchAttributes: policyHolder.contactId
+          matchQuery: '{ "contactId": "##policyHolder.contactId" }'
+          mqlAggregate: '[
+     { $match: { contactId: "##policyHolder.contactId" }},
+          {
+      $lookup:
+         {
+           from: "claim",
+           localField: "contactId",
+            foreignField: "policyHolder.contactId",
+
+           pipeline: [
+
+              { $project: { "claimId": "$claimId",
+              "claimNumber" : "$claimNumber",
+               "policyNumber" : "$policyList.id",
+           "isPoliceIntervention" : "$isPoliceIntervention",
+"eventDate" : "$eventDate",
+"notificationDate" : "$notificationDate",
+"claimEventDescription" : "$claimEventDescription",
+"claimant" : "$claimant",
+"informant" : "$informant",
+"claimStatus": "$claimStatusType.description",
+"claimDate": "$createDate",
+"causeOfLoss": "$causeOfLoss",
+ "claimAmount": {$toDouble:"$amountClaimed"},
+ "claimDescription": "N/A",
+ "lobDescription": "N/A",
+ "policyHolderName": "$policyHolder.policyHolderName",
+ "assetDetails": {"assetDescription": "N/A",
+ "plateNumber": "N/A" }
+
+              }}
+           ],
+           as: "claim"
+         }
+    }, { $addFields: {
+		"noOfClaims": { $size: "$claim" },
+       "claim.policyHolderName": "$fullName",
+        "toatalClaimedAmount":{$toString:{ $sum:"$claim.claimAmount"} }
+        },
+       
+
+
+}
+,{ $merge: "cust360"}
+    ]'
+        kafkaPushInd: false
+        kafkaTopic: 'cust360'
+
+  - watchedCollection: policy
+    # target Views
+    targetViews:
+      - collName: cust360
+        calculatedAttributes:
+          matchAttributes: policyHolder.contactId
+          matchQuery: '{ "contactId": "##policyHolder.contactId" }'
+          mqlAggregate: '[
+     { $match: { contactId: "##policyHolder.contactId" }},
+	 {
+      $lookup:
+         {
+           from: "policy",
+           localField: "contactId",
+            foreignField: "policyHolder.contactId",
+
+           pipeline: [
+
+              { $project: { "policyId": "$policyId" ,
+              "policyHeaderId" : "$policyHeaderId",
+              "policyNumber" : "$policyNumber" ,
+              "agentId" : "$agentId" ,
+              "product" : "$product",
+              "externalPolicyNr" : "$externalPolicyNr" ,
+              "externalProposalNr" : "$externalProposalNr" ,
+			  "policyStatus" : "$status.description",
+              "policyVersion" : "$policyVersion",
+              "startDate" : "$startDate",
+              "endDate" : "$endDate",
+              "lobId" : "$lineOfBusiness.id",
+              "policyPremium" : {$toDouble:"$premium_amount"},
+			  "lobDescription" : "$lineOfBusiness.description",
+			  "policyHolderName" : "$policyHolder.policyHolderName" ,
+              "risk" : "$risk",
+              "riskCount" : "$riskCount",
+      assetDetails : "$assetDetails",
+                       coverage  : "$covers" }}
+      ],
+                       as: "policy"
+      }
+  },
+    { $addFields: {
+      noOfPolicies: { $size: "$policy" },
+      totalPremium: {$toString:{ $sum: "$policy.policyPremium" }}
+
+    }
+    }
+  ,{ $merge: "cust360"}
+]'
+        kafkaPushInd: false
+        kafkaTopic: 'cust360'
