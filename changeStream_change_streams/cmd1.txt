@@ -1,0 +1,27 @@
+java -cp target/libs/*;target/SSI-0.0.1-SNAPSHOT.jar com.sapiens.ssi.SSIApplication configTestEventsNoSQL_IDIT_contact.yaml
+
+java -cp target/libs/*;target/SSI-0.0.1-SNAPSHOT.jar com.sapiens.ssi.SSIApplication configTestEventsNoSQL_IDIT_policy.yaml
+
+java -cp target/libs/*;target/SSI-0.0.1-SNAPSHOT.jar com.sapiens.ssi.SSIApplication configTestEventsNoSQL_IDIT_claim.yaml
+
+----------------------------------------------------------------------------------------------------------------------------------------
+java -cp target/libs/*;target/change_streams-1.0-SNAPSHOT.jar com.sapiens.changestreams.watcher.ChangeStreamConfig config.yaml
+java -cp target/libs/*;target/change_streams-1.0-SNAPSHOT.jar com.sapiens.changestreams.main.ChangeStreamInitializer config.yaml
+
+java -cp target/libs/*;target/SSI-0.0.1-SNAPSHOT.jar com.sapiens.ssi.SSIApplication configTestEventsNoSQL_IDIT_contact_demo.yaml
+
+java -cp target/libs/*;target/SSI-0.0.1-SNAPSHOT.jar com.sapiens.ssi.SSIApplication configTestEventsNoSQL_IDIT_policy_demo.yaml
+
+java -cp target/libs/*;target/SSI-0.0.1-SNAPSHOT.jar com.sapiens.ssi.SSIApplication configTestEventsNoSQL_IDIT_claim_demo.yaml
+
+
+java -cp target/libs/*;target/SSI-0.0.1-SNAPSHOT.jar com.sapiens.ssi.SSIApplication configTestEventsNoSQL_IDIT_contact_dataone.yaml
+
+java -cp target/libs/*;target/SSI-0.0.1-SNAPSHOT.jar com.sapiens.ssi.SSIApplication configTestEventsNoSQL_IDIT_policy_dataone.yaml
+
+java -cp target/libs/*;target/SSI-0.0.1-SNAPSHOT.jar com.sapiens.ssi.SSIApplication configTestEventsNoSQL_IDIT_claim_dataone.yaml
+
+
+
+java -cp target/libs/*;target/change_streams-1.0-SNAPSHOT.jar com.sapiens.changestreams.watcher.ChangeStreamConfig config.yaml
+

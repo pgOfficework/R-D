@@ -1,0 +1,182 @@
+#https://docs.mongodb.com/manual/tutorial/update-documents-with-aggregation-pipeline/
+mongodb:
+  #uri: mongodb+srv://SapiensDBA:Sapiens123@datahub.b0ho1.mongodb.net/
+  uri: mongodb+srv://SapiensDBA:Sapiens123@datahub-freecluster.b0ho1.mongodb.net/
+  #uri: mongodb+srv://SapiensDBA:Sapiens123@datahub-freecluster.lvofs.mongodb.net/test?authSource=admin&replicaSet=atlas-3y2fe5-shard-0&readPreference=primary&ssl=true
+  database: R&D_NoSQL
+  changeStreamThreads: 20
+  changeStreamMaxBatchSize: 100
+  changeStreamMaxBatchDurationMS: 500
+#change streams config details List
+changeStreams:
+  - auditCollections: contact,policy,claim
+    #change Stream 1
+    watchedCollection: contact
+    targetCollections:
+      # target collection 1
+      - collName: policy
+        match : _id,policyHolder.contactId
+        completeDocument: No # need to developed
+        directAttributes:
+          - watchField: firstName
+            targetField : firstName
+          - watchField : lastName
+            targetField : lastName
+
+        # configuration to push changes of target collection to Kafka
+        kafkaPushInd : false
+        kafkaTopic : 'policy'
+      # target Views
+    targetViews:
+      - collName: cust360
+        match: contactId,contactId
+        completeDocument: No
+        directAttributes:
+          - watchField : fullName
+            targetField : fullName
+          - watchField : contactNumber
+            targetField : contactNumber
+          - watchField : dateOfBirth
+            targetField : dateOfBirth
+          - watchField : gender.description
+            targetField : gender
+          - watchField: telephoneNumbers.telephoneNumber
+            targetField: telephoneNumber
+          - watchField: emails.email
+            targetField: email
+        kafkaPushInd: false
+        kafkaTopic: 'cust360'
+
+  - watchedCollection: claim
+        # target Views
+    targetViews:
+      - collName: cust360
+        calculatedAttributes:
+          matchAttributes: policyHolder.contactId
+          matchQuery: '{ "contactId": "##policyHolder.contactId" }'
+          mqlAggregate: '[
+     { $match: { contactId: "##policyHolder.contactId" }},
+   {
+      $lookup:
+         {
+           from: "policy",
+           localField: "contactId",
+            foreignField: "policyHolder.contactId",
+
+           pipeline: [
+
+              { $project: { "policyId": "$policyId" ,
+              "policyHeaderId" : "$policyHeaderId",
+              "policyNumber" : "$policyNumber" ,
+              "policyVersion" : "policyVersion",
+              "startDate" : "$startDate",
+              "endDate" : "$endDate",
+              "policyPremium" : "$premium_amount" ,
+              coverage  : "$covers" }}
+           ],
+           as: "policy"
+         }
+    },
+     {
+      $lookup:
+         {
+           from: "claim",
+           localField: "contactId",
+            foreignField: "policyHolder.contactId",
+
+           pipeline: [
+
+              { $project: { "claimId": "$claimId",
+              "claimNumber" : "$claimNumber",
+           "isPoliceIntervention" : "$isPoliceIntervention",
+"eventDate" : "$eventDate",
+"notificationDate" : "$notificationDate",
+"claimEventDescription" : "$claimEventDescription",
+"claimant" : "$claimant",
+"informant" : "$informant"
+
+
+
+
+              }}
+           ],
+           as: "claim"
+         }
+    }, { $addFields: {
+		noOfPolicies: { $size: "$policy" },
+		noOfClaims: { $size: "$claim" },
+		totalPremium: { $sum: "$policy.policyPremium" }
+
+    }
+}
+,{ $merge: "cust360"}
+    ]'
+        kafkaPushInd: false
+        kafkaTopic: 'cust360'
+
+  - watchedCollection: policy
+      # target Views
+    targetViews:
+          - collName: cust360
+            calculatedAttributes:
+              matchAttributes: policyHolder.contactId
+              matchQuery: '{ "contactId": "##policyHolder.contactId" }'
+              mqlAggregate: '[
+     { $match: { contactId: "##policyHolder.contactId" }},
+   {
+      $lookup:
+         {
+           from: "policy",
+           localField: "contactId",
+            foreignField: "policyHolder.contactId",
+
+           pipeline: [
+
+              { $project: { "policyId": "$policyId" ,
+              "policyHeaderId" : "$policyHeaderId",
+              "policyNumber" : "$policyNumber" ,
+              "policyVersion" : "policyVersion",
+              "startDate" : "$startDate",
+              "endDate" : "$endDate",
+              "policyPremium" : "$premium_amount" ,
+              coverage  : "$covers" }}
+           ],
+           as: "policy"
+         }
+    },
+     {
+      $lookup:
+         {
+           from: "claim",
+           localField: "contactId",
+            foreignField: "policyHolder.contactId",
+
+           pipeline: [
+
+              { $project: { "claimId": "$claimId",
+              "claimNumber" : "$claimNumber",
+           "isPoliceIntervention" : "$isPoliceIntervention",
+"eventDate" : "$eventDate",
+"notificationDate" : "$notificationDate",
+"claimEventDescription" : "$claimEventDescription",
+"claimant" : "$claimant",
+"informant" : "$informant"
+
+
+
+
+              }}
+           ],
+           as: "claim"
+         }
+    }, { $addFields: {
+		noOfPolicies: { $size: "$policy" },
+		noOfClaims: { $size: "$claim" },
+		totalPremium: { $sum: "$policy.policyPremium" }
+
+    }
+}
+,{ $merge: "cust360"}
+    ]'
+            kafkaPushInd: false
+            kafkaTopic: 'cust360'

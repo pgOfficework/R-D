@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn" name="logTesting" packages="logTesting">
+  <Appenders>
+    <SMTP name="Mail" subject="Error Log" to="errors@logging.apache.org" from="test@logging.apache.org"
+          smtpHost="localhost" smtpPort="25" bufferSize="50">
+    </SMTP>
+  </Appenders>
+  <Loggers>
+    <Root level="error">
+      <AppenderRef ref="Mail"/>
+    </Root>
+  </Loggers>
+</Configuration>
